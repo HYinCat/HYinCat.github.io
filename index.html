@@ -1,222 +1,39 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>脑叶员工模拟器</title>
-<style>
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:system-ui,sans-serif;
-}
-body{
-    background:#121212;
-    color:#fff;
-    max-width:700px;
-    margin:30px auto;
-    padding:0 20px;
-}
-.page{
-    display:none;
-}
-.page.active{
-    display:block;
-}
-
-/* 开始界面 */
-#start-page{
-    text-align:center;
-    margin-top:60px;
-}
-#start-page h1{
-    font-size:32px;
-    margin-bottom:40px;
-    color:#ffcc00;
-}
-.btn{
-    background:#333;
-    color:#fff;
-    border:none;
-    padding:14px 30px;
-    font-size:18px;
-    border-radius:8px;
-    margin-top:20px;
-    cursor:pointer;
-}
-.btn:hover{
-    background:#444;
-}
-
-/* 属性分配 */
-#stat-page{
-    margin-top:30px;
-}
-#stat-page h2{
-    text-align:center;
-    margin-bottom:20px;
-}
-.stat-item{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:12px 0;
-    font-size:18px;
-}
-.stat-btn{
-    width:40px;
-    height:40px;
-    font-size:20px;
-    background:#222;
-    color:#fff;
-    border:none;
-    border-radius:6px;
-    cursor:pointer;
-}
-.point-box{
-    margin:20px 0;
-    font-size:18px;
-    text-align:center;
-}
-#confirm{
-    width:100%;
-    padding:14px;
-    font-size:18px;
-    background:#ffcc00;
-    color:#000;
-    border:none;
-    border-radius:8px;
-    font-weight:bold;
-}
-
-/* 游戏主界面 */
-#game-page{
-    margin-top:30px;
-}
-#game-page h2{
-    margin-bottom:20px;
-    text-align:center;
-}
-.status-info{
-    background:#1e1e1e;
-    padding:20px;
-    border-radius:10px;
-    font-size:18px;
-    line-height:2;
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>脑叶公司 - 员工模拟器</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-<!-- 1. 开始界面 -->
-<div id="start-page" class="page active">
-    <h1>脑叶员工模拟器</h1>
-    <button class="btn" onclick="goStat()">开始游戏</button>
-</div>
-
-<!-- 2. 属性分配界面 -->
-<div id="stat-page" class="page">
-    <h2>员工属性分配</h2>
-    <div class="point-box">剩余可分配点数：<span id="remain">10</span></div>
-
-    <div class="stat-item">
-        <span>生命</span>
-        <div>
-            <button class="stat-btn" onclick="sub('hp')">-</button>
-            <span id="hp" style="margin:0 10px">10</span>
-            <button class="stat-btn" onclick="add('hp')">+</button>
+  <div class="container">
+    <header class="header">
+      <h1> Lobotomy Corp. 员工模拟器 </h1>
+      <div class="stats-bar">
+        <div class="stat">
+          <span>精神值:</span>
+          <span id="sanity">100</span>
         </div>
-    </div>
-
-    <div class="stat-item">
-        <span>精神</span>
-        <div>
-            <button class="stat-btn" onclick="sub('mind')">-</button>
-            <span id="mind" style="margin:0 10px">10</span>
-            <button class="stat-btn" onclick="add('mind')">+</button>
+        <div class="stat">
+          <span>体力值:</span>
+          <span id="health">100</span>
         </div>
-    </div>
-
-    <div class="stat-item">
-        <span>工作成功率</span>
-        <div>
-            <button class="stat-btn" onclick="sub('work')">-</button>
-            <span id="work" style="margin:0 10px">10</span>
-            <button class="stat-btn" onclick="add('work')">+</button>
+        <div class="stat">
+          <span>工作效率:</span>
+          <span id="efficiency">80</span>
         </div>
-    </div>
+      </div>
+    </header>
 
-    <div class="stat-item">
-        <span>战斗力</span>
-        <div>
-            <button class="stat-btn" onclick="sub('fight')">-</button>
-            <span id="fight" style="margin:0 10px">10</span>
-            <button class="stat-btn" onclick="add('fight')">+</button>
-        </div>
-    </div>
+    <main class="main-content">
+      <div id="log" class="log-box">
+        欢迎你，新员工。今天是你在 Lobotomy Corporation 的第一天。请选择你的行动。
+      </div>
+      <div id="actions" class="actions-box"></div>
+    </main>
+  </div>
 
-    <button id="confirm" onclick="startGame()">正式开始游戏</button>
-</div>
-
-<!-- 3. 游戏主界面（只显示数值） -->
-<div id="game-page" class="page">
-    <h2>员工状态</h2>
-    <div class="status-info" id="status"></div>
-</div>
-
-<script>
-// 属性
-let stat = {
-    hp:10,
-    mind:10,
-    work:10,
-    fight:10,
-    remain:10
-}
-
-// 切换页面
-function showPage(id){
-    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'))
-    document.getElementById(id).classList.add('active')
-}
-
-function goStat(){
-    showPage('stat-page')
-}
-
-// 加减属性
-function add(key){
-    if(stat.remain <=0) return
-    stat[key]++
-    stat.remain--
-    update()
-}
-function sub(key){
-    if(stat[key] <=10) return
-    stat[key]--
-    stat.remain++
-    update()
-}
-
-// 更新显示
-function update(){
-    document.getElementById('hp').innerText = stat.hp
-    document.getElementById('mind').innerText = stat.mind
-    document.getElementById('work').innerText = stat.work
-    document.getElementById('fight').innerText = stat.fight
-    document.getElementById('remain').innerText = stat.remain
-}
-
-// 开始游戏，显示数值
-function startGame(){
-    showPage('game-page')
-    document.getElementById('status').innerHTML = 
-    `生命：${stat.hp}<br>
-     精神：${stat.mind}<br>
-     工作成功率：${stat.work}<br>
-     战斗力：${stat.fight}`
-}
-</script>
+  <script src="game.js"></script>
 </body>
 </html>
